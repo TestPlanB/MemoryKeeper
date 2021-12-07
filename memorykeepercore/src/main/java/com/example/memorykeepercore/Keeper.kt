@@ -4,13 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.FragmentActivity
 import com.example.memorykeepercore.core.ViewKeeper
 import kotlinx.coroutines.*
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 
 object Keeper {
-    // todo:适配fragment
     // you should call it early
     fun init(application: Application) {
         application.registerActivityLifecycleCallbacks(object :
@@ -46,6 +46,7 @@ object Keeper {
                     startWatch(queue, weak)
                 }
 
+
             }
 
         })
@@ -61,11 +62,26 @@ object Keeper {
         queue.poll() ?: run {
             weakReference.get()?.let { activity ->
                 withContext(Dispatchers.Main) {
-                    val decorView = activity.window.decorView
-                    ViewKeeper.clearMemory(decorView)
+                    dealActivity(activity)
+                    dealActivityFragment(activity)
                 }
             }
         }
+    }
+
+    private fun dealActivityFragment(activity: Activity) {
+        if (activity is FragmentActivity) {
+            val fragments = activity.supportFragmentManager.fragments
+            for (fragment in fragments) {
+                fragment.view?.let { ViewKeeper.clearMemory(it) }
+            }
+        }
+
+    }
+
+    private fun dealActivity(activity: Activity) {
+        val decorView = activity.window.decorView
+        ViewKeeper.clearMemory(decorView)
     }
 
 

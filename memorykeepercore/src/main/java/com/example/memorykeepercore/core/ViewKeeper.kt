@@ -5,6 +5,7 @@ import android.app.Application
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -102,7 +103,15 @@ internal object ViewKeeper {
             setCompoundDrawables(null, null, null, null)
             setOnEditorActionListener(null)
         }
+        val editTextClass = EditText::class.java
+        val mListeners = editTextClass.getDeclaredField("mListeners")
+        mListeners.isAccessible = true
+        val textListeners = mListeners.get(textView)
+        if(textListeners is ArrayList<*>){
+            textListeners.clear()
+        }
     }
+
     @Synchronized
     fun clearProgressBarMemory(progressbar: ProgressBar) {
         val drawable = progressbar.progressDrawable
